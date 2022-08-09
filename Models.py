@@ -177,13 +177,13 @@ class AlphaModel:
         old_n_0 = self.n_0
         old_count_ratio = self.min_counts_raw() / self.n_counts()
 
-        self.n_0 = self.n_0 +np.random.uniform(-0.25, 0.5)
+        self.n_0 = self.n_0 + np.random.uniform(-0.25, 0.25)
         self.Omega_c = self.Omega_c + np.random.uniform(-1, 1)
         self.Omega_p = self.Omega_c * np.random.uniform(0, 1)
         new_count_ratio = self.min_counts_raw() / self.n_counts()
         peak_f_bl = self.rho_0() * self.V_bl_6() * self.n_0
 
-        if self.n_0 > 0.75  or self.n_0 < 0.01 :
+        if self.n_0 > 0.5  or self.n_0 < 0.0001 :
             self.n_0 = old_n_0
 
         elif self.Omega_c > 1 * self.Gamma_e or self.Omega_c < 0.01:
