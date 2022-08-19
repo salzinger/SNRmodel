@@ -120,6 +120,10 @@ class AlphaModel:
         return np.e ** (integrate.simps(- self.ground_state_density() * (self.chi_3_lvl() + self.chi_2_lvl() *
                                         self.f_bl()) / (1 + self.f_bl()), self.z_grid))
 
+    def transmission_eitImp(self):
+        return np.e ** (integrate.simps(- self.ground_state_density() * (self.f_ir() * self.chi_2_lvl() + (1-self.f_ir())*(self.chi_3_lvl() + self.chi_2_lvl() *
+                                        self.f_bl()) / (1 + self.f_bl()), self.z_grid)))
+
     def integrand(self):
         return self.ground_state_density() * self.f_ir() * self.chi_2_lvl() * (
                 (self.chi_3_lvl() / self.chi_2_lvl() + self.f_bl()) / (1 + self.f_bl()) - 1)
@@ -177,13 +181,13 @@ class AlphaModel:
         old_n_0 = self.n_0
         old_count_ratio = self.min_counts_raw() / self.n_counts()
 
-        self.n_0 = self.n_0 + np.random.uniform(-0.25, 0.25)
+        self.n_0 = self.n_0 *10**np.random.uniform(-3, 0)
         self.Omega_c = self.Omega_c + np.random.uniform(-1, 1)
         self.Omega_p = self.Omega_c * np.random.uniform(0, 1)
         new_count_ratio = self.min_counts_raw() / self.n_counts()
         peak_f_bl = self.rho_0() * self.V_bl_6() * self.n_0
 
-        if self.n_0 > 0.5  or self.n_0 < 0.0001 :
+        if self.n_0 > 2.5  or self.n_0 < 0.0001 :
             self.n_0 = old_n_0
 
         elif self.Omega_c > 1 * self.Gamma_e or self.Omega_c < 0.01:
@@ -213,7 +217,9 @@ class AlphaModel:
             self.rejection_ratio = self.rejected_values / self.step_count
             return None
 
+'''
+AlphaModel:
+    def __init__(self, Omega_p, Omega_c, gamma_p, gamma_c, Gamma_e, Q_E, n_0, sigma_z, sigma_r, texp, C_3, C_6, N_i):
+        self.Omega_p = Omega_p*2*np.pi
+'''
 
-a=AlphaModel
-
-a.walk
