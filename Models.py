@@ -46,10 +46,10 @@ class AlphaModel:
         return self.Omega_p ** 2 / self.Omega_c ** 2
 
     def R_3(self):
-        return (2 * self.C_3 * self.gamma_eg / (self.Omega_c ** 2 + self.gamma_eg * self.gamma_gR)) ** (1 / 3)
+        return (self.C_3 * np.sqrt(self.Gamma_e*(self.Gamma_e+self.gamma_gR)) / (self.Omega_c ** 2 )) ** (1 / 6)
 
     def R_6(self):
-        return (2 * self.C_6 * self.gamma_eg / (self.Omega_c ** 2 + self.gamma_eg * self.gamma_gR)) ** (1 / 6)
+        return (self.C_6 * np.sqrt(self.Gamma_e*(self.Gamma_e+self.gamma_gR)) / (self.Omega_c ** 2 )) ** (1 / 6)
 
     def V_bl_3(self):
         return 4 / 3 * np.pi * self.R_3() ** 3
@@ -61,7 +61,7 @@ class AlphaModel:
         return self.n_0 * np.exp(-0.5 * (self.z_grid / self.sigma_z) ** 2)
 
     def impurity_density(self):
-        return self.N_i / (self.R_3() * np.sqrt(2 * np.pi)) * np.exp(-0.5 * (self.z_grid / self.R_3()) ** 2)
+        return self.N_i / (self.R_6()/2 * np.sqrt(2 * np.pi)) * np.exp(-0.5 * (self.z_grid / self.R_6()*2) ** 2)
 
     def f_bl_simple(self):
         return self.rho_0() * self.V_bl_6() * self.ground_state_density()
@@ -102,9 +102,9 @@ class AlphaModel:
           #self.Gamma_e + self.gamma_eg) / self.Gamma_e)
 
     def chi_3_lvl(self):
-        return self.prefactor / (self.gamma_eg + (self.Omega_c ** 2) / (4 * self.gamma_gR))
+        #return (4 * self.gamma_gR) / (self.gamma_eg + self.Omega_c ** 2 )
         #return self.chi0 * self.Gamma_e / (self.gamma_eg + (self.Omega_c ** 2) / self.gamma_gR)
-        #return self.chi0 * self.gamma_gR / (self.gamma_gR * self.gamma_eg + self.Omega_c ** 2)
+        return  self.Gamma_e**2 / (self.Gamma_e**2 + self.Gamma_e/self.gamma_gR * self.Omega_c ** 2 + 2 *self.Omega_p**2)
 
     def transmission_2lvl(self):
         return np.e ** (integrate.simps(- self.ground_state_density() * self.chi_2_lvl(), self.z_grid))
@@ -121,8 +121,9 @@ class AlphaModel:
                                         self.f_bl()) / (1 + self.f_bl()), self.z_grid))
 
     def transmission_eitImp(self):
-        return np.e ** (integrate.simps(- self.ground_state_density() * (self.f_ir() * self.chi_2_lvl() + (1-self.f_ir())*(self.chi_3_lvl() + self.chi_2_lvl() *
-                                        self.f_bl()) / (1 + self.f_bl()), self.z_grid)))
+        return np.e ** (integrate.simps( - self.ground_state_density() * (self.f_ir() * self.chi_2_lvl()
+                                        + (1-self.f_ir())*(self.chi_3_lvl() + self.chi_2_lvl() * self.f_bl()) / (1 + self.f_bl()))
+                                        , self.z_grid))
 
     def integrand(self):
         return self.ground_state_density() * self.f_ir() * self.chi_2_lvl() * (
@@ -181,13 +182,13 @@ class AlphaModel:
         old_n_0 = self.n_0
         old_count_ratio = self.min_counts_raw() / self.n_counts()
 
-        self.n_0 = self.n_0 *10**np.random.uniform(-3, 0)
-        self.Omega_c = self.Omega_c + np.random.uniform(-1, 1)
+        self.n_0 = self.n_0 + np.random.uniform(-0.2, 0.2)#*10**np.random.uniform(-3, 0)
+        self.Omega_c = self.Omega_c + np.random.uniform(-2, 2)
         self.Omega_p = self.Omega_c * np.random.uniform(0, 1)
         new_count_ratio = self.min_counts_raw() / self.n_counts()
         peak_f_bl = self.rho_0() * self.V_bl_6() * self.n_0
 
-        if self.n_0 > 2.5  or self.n_0 < 0.0001 :
+        if self.n_0 > 1  or self.n_0 < 0.0001:
             self.n_0 = old_n_0
 
         elif self.Omega_c > 1 * self.Gamma_e or self.Omega_c < 0.01:
