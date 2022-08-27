@@ -61,7 +61,7 @@ class AlphaModel:
         return self.n_0 * np.exp(-0.5 * (self.z_grid / self.sigma_z) ** 2)
 
     def impurity_density(self):
-        return self.N_i / (self.R_6()/2 * np.sqrt(2 * np.pi)) * np.exp(-0.5 * (self.z_grid / self.R_6()*2) ** 2)
+        return self.N_i / (self.R_6()/1.5 * np.sqrt(2 * np.pi)) * np.exp(-0.5 * (self.z_grid / self.R_6()*1.5) ** 2)
 
     def f_bl_simple(self):
         return self.rho_0() * self.V_bl_6() * self.ground_state_density()
@@ -104,7 +104,8 @@ class AlphaModel:
     def chi_3_lvl(self):
         #return (4 * self.gamma_gR) / (self.gamma_eg + self.Omega_c ** 2 )
         #return self.chi0 * self.Gamma_e / (self.gamma_eg + (self.Omega_c ** 2) / self.gamma_gR)
-        return  self.Gamma_e**2 / (self.Gamma_e**2 + self.Gamma_e/self.gamma_gR * self.Omega_c ** 2 + 2 *self.Omega_p**2)
+        return  0.78**3*self.Gamma_e**2 \
+                / (self.Gamma_e**2 + self.Gamma_e/self.gamma_gR * self.Omega_c ** 2 + 2 * self.Omega_p**2)
 
     def transmission_2lvl(self):
         return np.e ** (integrate.simps(- self.ground_state_density() * self.chi_2_lvl(), self.z_grid))
@@ -156,6 +157,7 @@ class AlphaModel:
         self.simple_eit_list = []
         self.single_eit_list = []
         self.eit_list = []
+        self.peak_f_bl_list = []
         for n in density:
             self.n_0 = n
             # print(self.n_0)
@@ -168,10 +170,12 @@ class AlphaModel:
             self.simple_eit_list.append(self.transmission_simple_eit())
             self.single_eit_list.append(self.transmission_single_eit())
             self.eit_list.append(self.transmission_eit())
+            peak_f_bl = self.rho_0() * self.V_bl_6() * self.n_0
+            self.peak_f_bl_list.append(peak_f_bl)
 
             # self.Omega_p = original_Omega_p
 
-        return self.twolvl_list, self.simple_eit_list, self.eit_list, self.single_eit_list
+        return self.twolvl_list, self.simple_eit_list, self.eit_list, self.single_eit_list, self.peak_f_bl_list
 
     def walk(self):
 
